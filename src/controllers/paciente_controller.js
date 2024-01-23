@@ -3,6 +3,7 @@ import mongoose from "mongoose"
 import { sendMailToPaciente } from "../config/nodemailer.js"
 import Paciente from "../models/Paciente.js"
 import generarJWT from "../helpers/crearJWT.js"
+import Tratamiento from "../models/Tratamiento.js"
 
 
 const loginPaciente = async(req,res)=>{
@@ -47,7 +48,11 @@ const detallePaciente = async(req,res)=>{
     const {id} = req.params
     if( !mongoose.Types.ObjectId.isValid(id) ) return res.status(404).json({msg:`Lo sentimos, no existe el veterinario ${id}`});
     const paciente = await Paciente.findById(id).select("-createdAt -updatedAt -__v").populate('veterinario','_id nombre apellido')
-    res.status(200).json(paciente)
+    const tratamientos = await Tratamiento.find({estado:true}).where('paciente').equals(id)
+    res.status(200).json({
+        paciente,
+        tratamientos
+    })
 }
 const registrarPaciente = async(req,res)=>{
     const {email} = req.body
